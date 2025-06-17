@@ -1,0 +1,539 @@
+@page
+@model ScreenerModel
+@{
+    ViewData["Title"] = "Stock Screener";
+}
+
+<div class="row">
+    <!-- Screener Form -->
+    <div class="col-12 col-lg-4 mb-4">
+        <div class="card sticky-top">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-sliders me-1"></i>
+                    Stock Screener
+                </h5>
+            </div>
+            <div class="card-body">
+                <form id="screenerForm">
+                    <div class="row g-3">
+                        <!-- P/E Ratio -->
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">P/E Ratio</label>
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <input type="number" class="form-control form-control-sm" 
+                                           name="minPE" placeholder="Min" step="0.1" min="0">
+                                </div>
+                                <div class="col-6">
+                                    <input type="number" class="form-control form-control-sm" 
+                                           name="maxPE" placeholder="Max" step="0.1" min="0">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Price Range -->
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Price Range</label>
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <input type="number" class="form-control form-control-sm" 
+                                           name="minPrice" placeholder="Min $" step="0.01" min="0">
+                                </div>
+                                <div class="col-6">
+                                    <input type="number" class="form-control form-control-sm" 
+                                           name="maxPrice" placeholder="Max $" step="0.01" min="0">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Market Cap -->
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Market Cap</label>
+                            <select class="form-select form-select-sm" name="minMarketCap">
+                                <option value="">Any Size</option>
+                                <option value="50000000">Nano (>$50M)</option>
+                                <option value="300000000">Micro (>$300M)</option>
+                                <option value="2000000000">Small (>$2B)</option>
+                                <option value="10000000000">Mid (>$10B)</option>
+                                <option value="200000000000">Large (>$200B)</option>
+                            </select>
+                        </div>
+
+                        <!-- Volume -->
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Min Volume</label>
+                            <select class="form-select form-select-sm" name="minVolume">
+                                <option value="">Any Volume</option>
+                                <option value="100000">100K+</option>
+                                <option value="500000">500K+</option>
+                                <option value="1000000">1M+</option>
+                                <option value="5000000">5M+</option>
+                                <option value="10000000">10M+</option>
+                            </select>
+                        </div>
+
+                        <!-- Sector -->
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Sector</label>
+                            <select class="form-select form-select-sm" name="sector">
+                                <option value="">All Sectors</option>
+                                <option value="Technology">Technology</option>
+                                <option value="Healthcare">Healthcare</option>
+                                <option value="Financial Services">Financial Services</option>
+                                <option value="Consumer Cyclical">Consumer Cyclical</option>
+                                <option value="Industrials">Industrials</option>
+                                <option value="Communication Services">Communication Services</option>
+                                <option value="Consumer Defensive">Consumer Defensive</option>
+                                <option value="Energy">Energy</option>
+                                <option value="Utilities">Utilities</option>
+                                <option value="Real Estate">Real Estate</option>
+                                <option value="Basic Materials">Basic Materials</option>
+                            </select>
+                        </div>
+
+                        <!-- Sort Options -->
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Sort By</label>
+                            <div class="row g-2">
+                                <div class="col-8">
+                                    <select class="form-select form-select-sm" name="sortBy">
+                                        <option value="Symbol">Symbol</option>
+                                        <option value="Price">Price</option>
+                                        <option value="Volume" selected>Volume</option>
+                                        <option value="MarketCap">Market Cap</option>
+                                        <option value="PERatio">P/E Ratio</option>
+                                    </select>
+                                </div>
+                                <div class="col-4">
+                                    <select class="form-select form-select-sm" name="sortDescending">
+                                        <option value="false">↑ Asc</option>
+                                        <option value="true" selected>↓ Desc</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="col-12 pt-2">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-search me-1"></i>
+                                Screen Stocks
+                            </button>
+                        </div>
+
+                        <!-- Clear Button -->
+                        <div class="col-12">
+                            <button type="button" class="btn btn-outline-secondary w-100" onclick="clearForm()">
+                                <i class="bi bi-x-circle me-1"></i>
+                                Clear All
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results -->
+    <div class="col-12 col-lg-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="mb-0">
+                        <i class="bi bi-table me-1"></i>
+                        Screener Results
+                    </h5>
+                    <small class="text-muted" id="resultsCount">Click "Screen Stocks" to see results</small>
+                </div>
+                <button class="btn btn-sm btn-outline-success" id="exportBtn" onclick="exportResults()" style="display: none;">
+                    <i class="bi bi-download me-1"></i>Export CSV
+                </button>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-dark sticky-top">
+                            <tr>
+                                <th class="ps-3">Symbol</th>
+                                <th class="d-none d-sm-table-cell">Company</th>
+                                <th class="text-end">Price</th>
+                                <th class="text-end d-none d-md-table-cell">Change</th>
+                                <th class="text-end d-none d-lg-table-cell">Volume</th>
+                                <th class="text-end d-none d-lg-table-cell">Market Cap</th>
+                                <th class="text-end d-none d-xl-table-cell">P/E</th>
+                                <th class="d-none d-xl-table-cell">Sector</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resultsBody">
+                            <tr>
+                                <td colspan="8" class="text-center py-5 text-muted">
+                                    <i class="bi bi-search fs-1 mb-3 d-block"></i>
+                                    <h6>Ready to Screen</h6>
+                                    <p class="small mb-0">Configure your filters and click "Screen Stocks" to find matching securities.</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <nav id="pagination" class="mt-3" style="display: none;">
+            <ul class="pagination justify-content-center" id="paginationList">
+            </ul>
+        </nav>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    let currentResults = [];
+    let currentPage = 1;
+    let totalPages = 1;
+
+    // Handle form submission
+    document.getElementById('screenerForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        searchStocks();
+    });
+
+    // Search stocks
+    async function searchStocks(page = 1) {
+        try {
+            showLoading();
+            currentPage = page;
+
+            const formData = new FormData(document.getElementById('screenerForm'));
+            const params = new URLSearchParams();
+            
+            // Add all form fields to params
+            for (let [key, value] of formData.entries()) {
+                if (value) params.append(key, value);
+            }
+            
+            // Add pagination
+            params.append('page', page);
+            params.append('pageSize', '20');
+
+            const response = await fetch(`/api/stocks?${params.toString()}`);
+            const data = await response.json();
+
+            if (response.ok) {
+                currentResults = data.stocks || [];
+                totalPages = data.totalPages || 1;
+                updateResults(data);
+                updatePagination();
+            } else {
+                showError('Search failed: ' + (data.error || 'Unknown error'));
+            }
+        } catch (error) {
+            console.error('Search error:', error);
+            showError('Search failed: ' + error.message);
+        }
+    }
+
+    // Update results table
+    function updateResults(data) {
+        const tbody = document.getElementById('resultsBody');
+        const results = data.stocks || [];
+        
+        document.getElementById('resultsCount').textContent = 
+            `${data.totalCount || 0} stocks found (page ${data.page || 1} of ${data.totalPages || 1})`;
+
+        if (!results.length) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="8" class="text-center py-5 text-muted">
+                        <i class="bi bi-search fs-1 mb-3 d-block"></i>
+                        <h6>No Results Found</h6>
+                        <p class="small mb-0">Try adjusting your filters or broaden your search criteria.</p>
+                    </td>
+                </tr>
+            `;
+            document.getElementById('exportBtn').style.display = 'none';
+            return;
+        }
+
+        tbody.innerHTML = results.map(stock => `
+            <tr>
+                <td class="ps-3">
+                    <strong>${stock.symbol}</strong>
+                    <div class="d-sm-none small text-muted">${stock.companyName || stock.symbol}</div>
+                </td>
+                <td class="d-none d-sm-table-cell">
+                    <div>${stock.companyName || stock.symbol}</div>
+                    <small class="text-muted d-xl-none">${stock.sector || 'N/A'}</small>
+                </td>
+                <td class="text-end">
+                    <strong>$${stock.price ? stock.price.toFixed(2) : '--'}</strong>
+                    <div class="d-lg-none small text-muted">
+                        Vol: ${stock.volume ? stock.volume.toLocaleString() : '--'}
+                    </div>
+                </td>
+                <td class="text-end d-none d-md-table-cell">
+                    ${stock.dayChangePercent ? 
+                        `<span class="${stock.dayChangePercent >= 0 ? 'text-success' : 'text-danger'}">
+                            ${stock.dayChangePercent.toFixed(2)}%
+                        </span>
+                        ${stock.dayChange ? `<div class="small text-muted">${stock.dayChange.toFixed(2)}</div>` : ''}` 
+                        : '<span class="text-muted">--</span>'
+                    }
+                </td>
+                <td class="text-end d-none d-lg-table-cell">
+                    ${stock.volume ? stock.volume.toLocaleString() : '--'}
+                </td>
+                <td class="text-end d-none d-lg-table-cell">
+                    ${stock.marketCap ? formatMarketCap(stock.marketCap) : '--'}
+                </td>
+                <td class="text-end d-none d-xl-table-cell">
+                    ${stock.peRatio ? stock.peRatio.toFixed(1) : '--'}
+                </td>
+                <td class="d-none d-xl-table-cell">
+                    <span class="badge bg-light text-dark">${stock.sector || 'Unknown'}</span>
+                </td>
+            </tr>
+        `).join('');
+
+        document.getElementById('exportBtn').style.display = 'block';
+    }
+
+    // Update pagination
+    function updatePagination() {
+        const paginationContainer = document.getElementById('pagination');
+        const paginationList = document.getElementById('paginationList');
+
+        if (totalPages <= 1) {
+            paginationContainer.style.display = 'none';
+            return;
+        }
+
+        paginationContainer.style.display = 'block';
+        
+        let paginationHTML = '';
+        
+        // Previous button
+        if (currentPage > 1) {
+            paginationHTML += `
+                <li class="page-item">
+                    <a class="page-link" href="#" onclick="searchStocks(${currentPage - 1})">
+                        <i class="bi bi-chevron-left"></i>
+                    </a>
+                </li>
+            `;
+        }
+
+        // Page numbers
+        for (let i = Math.max(1, currentPage - 2); i <= Math.min(totalPages, currentPage + 2); i++) {
+            paginationHTML += `
+                <li class="page-item ${i === currentPage ? 'active' : ''}">
+                    <a class="page-link" href="#" onclick="searchStocks(${i})">${i}</a>
+                </li>
+            `;
+        }
+
+        // Next button
+        if (currentPage < totalPages) {
+            paginationHTML += `
+                <li class="page-item">
+                    <a class="page-link" href="#" onclick="searchStocks(${currentPage + 1})">
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+            `;
+        }
+
+        paginationList.innerHTML = paginationHTML;
+    }
+
+    // Clear form
+    function clearForm() {
+        document.getElementById('screenerForm').reset();
+        // Reset results
+        document.getElementById('resultsBody').innerHTML = `
+            <tr>
+                <td colspan="8" class="text-center py-5 text-muted">
+                    <i class="bi bi-search fs-1 mb-3 d-block"></i>
+                    <h6>Ready to Screen</h6>
+                    <p class="small mb-0">Configure your filters and click "Screen Stocks" to find matching securities.</p>
+                </td>
+            </tr>
+        `;
+        document.getElementById('resultsCount').textContent = 'Click "Screen Stocks" to see results';
+        document.getElementById('exportBtn').style.display = 'none';
+        document.getElementById('pagination').style.display = 'none';
+    }
+
+    // Export results to CSV
+    function exportResults() {
+        if (!currentResults.length) {
+            showNotification('No results to export', 'warning');
+            return;
+        }
+
+        const csv = generateCSV(currentResults);
+        downloadCSV(csv, `screener_results_${new Date().toISOString().split('T')[0]}.csv`);
+        showNotification('Results exported successfully!', 'success');
+    }
+
+    // Generate CSV content
+    function generateCSV(data) {
+        const headers = ['Symbol', 'Company Name', 'Price', 'Market Cap', 'Volume', 'P/E Ratio', 'Day Change', 'Day Change %', 'Sector'];
+        const rows = data.map(stock => [
+            stock.symbol,
+            stock.companyName || '',
+            stock.price || '',
+            stock.marketCap || '',
+            stock.volume || '',
+            stock.peRatio || '',
+            stock.dayChange || '',
+            stock.dayChangePercent || '',
+            stock.sector || ''
+        ]);
+
+        return [headers, ...rows].map(row => 
+            row.map(field => `"${field}"`).join(',')
+        ).join('\n');
+    }
+
+    // Download CSV file
+    function downloadCSV(csv, filename) {
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.setAttribute('hidden', '');
+        a.setAttribute('href', url);
+        a.setAttribute('download', filename);
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+    }
+
+    // Utility functions
+    function formatMarketCap(marketCap) {
+        if (marketCap >= 1_000_000_000_000) {
+            return `$${(marketCap / 1_000_000_000_000).toFixed(1)}T`;
+        } else if (marketCap >= 1_000_000_000) {
+            return `$${(marketCap / 1_000_000_000).toFixed(1)}B`;
+        } else if (marketCap >= 1_000_000) {
+            return `$${(marketCap / 1_000_000).toFixed(0)}M`;
+        }
+        return `$${marketCap.toLocaleString()}`;
+    }
+
+    function showLoading() {
+        document.getElementById('resultsBody').innerHTML = `
+            <tr>
+                <td colspan="8" class="text-center py-4 text-muted">
+                    <i class="bi bi-hourglass-split me-2"></i>
+                    Searching stocks...
+                </td>
+            </tr>
+        `;
+        document.getElementById('resultsCount').textContent = 'Searching...';
+    }
+
+    function showError(message) {
+        document.getElementById('resultsBody').innerHTML = `
+            <tr>
+                <td colspan="8" class="text-center py-4 text-danger">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    ${message}
+                </td>
+            </tr>
+        `;
+    }
+
+    function showNotification(message, type = 'info') {
+        // Create toast notification
+        const toastContainer = document.getElementById('toastContainer') || createToastContainer();
+        const toast = document.createElement('div');
+        toast.className = `alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show`;
+        toast.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        toastContainer.appendChild(toast);
+        
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.parentNode.removeChild(toast);
+            }
+        }, 3000);
+    }
+
+    function createToastContainer() {
+        const container = document.createElement('div');
+        container.id = 'toastContainer';
+        container.className = 'position-fixed top-0 end-0 p-3';
+        container.style.zIndex = '1050';
+        document.body.appendChild(container);
+        return container;
+    }
+
+    // Check for URL parameters (preset loading)
+    window.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const preset = urlParams.get('preset');
+        
+        if (preset) {
+            loadPreset(preset);
+        }
+    });
+
+    // Load preset configurations
+    function loadPreset(presetName) {
+        const presets = {
+            'value': {
+                minPE: 5,
+                maxPE: 15,
+                minMarketCap: 1000000000,
+                sortBy: 'PERatio'
+            },
+            'tech': {
+                sector: 'Technology',
+                minMarketCap: 10000000000,
+                sortBy: 'MarketCap',
+                sortDescending: true
+            },
+            'volume': {
+                minVolume: 10000000,
+                sortBy: 'Volume',
+                sortDescending: true
+            }
+        };
+
+        const preset = presets[presetName];
+        if (preset) {
+            // Fill form with preset values
+            Object.entries(preset).forEach(([key, value]) => {
+                const input = document.querySelector(`[name="${key}"]`);
+                if (input) {
+                    input.value = value;
+                }
+            });
+            
+            // Auto-run search
+            setTimeout(() => searchStocks(), 500);
+        }
+    }
+</script>
+}
+
+<style>
+.sticky-top {
+    top: 1rem;
+}
+
+@@media (max-width: 768px) {
+    .table th, .table td {
+        padding: 0.5rem 0.25rem;
+        font-size: 0.875rem;
+    }
+    .table th:first-child, .table td:first-child {
+        padding-left: 0.75rem;
+    }
+}
+</style>

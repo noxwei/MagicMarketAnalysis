@@ -47,7 +47,7 @@ public interface IStockRepository
 {
     Task<Stock?> GetBySymbolAsync(string symbol);
     Task<List<Stock>> GetAllAsync();
-    Task<List<Stock>> SearchAsync(ScreenerRequest request);
+    Task<ScreenerResult> SearchAsync(ScreenerRequest request);
     Task UpsertAsync(Stock stock);
     Task UpsertBatchAsync(List<Stock> stocks);
 }
@@ -82,7 +82,7 @@ public class StockRepository : IStockRepository
         return rows.Select(MapToStock).ToList();
     }
 
-    public async Task<List<Stock>> SearchAsync(ScreenerRequest request)
+    public async Task<ScreenerResult> SearchAsync(ScreenerRequest request)
     {
         using var connection = new SqliteConnection(_connectionString);
         
@@ -138,6 +138,12 @@ public class StockRepository : IStockRepository
         }
 
         var whereClause = whereClauses.Any() ? $"WHERE {string.Join(" AND ", whereClauses)}" : "";
+        
+        // Get total count
+        var countSql = $"SELECT COUNT(*) FROM Stocks {whereClause}";
+        var totalCount = await connection.QuerySingleAsync<int>(countSql, parameters);
+        
+        // Get paginated results
         var orderByClause = $"ORDER BY {request.SortBy} {(request.SortDescending ? "DESC" : "ASC")}";
         var limitClause = $"LIMIT @PageSize OFFSET @Offset";
         
@@ -147,7 +153,15 @@ public class StockRepository : IStockRepository
         var sql = $"SELECT * FROM Stocks {whereClause} {orderByClause} {limitClause}";
         
         var rows = await connection.QueryAsync(sql, parameters);
-        return rows.Select(MapToStock).ToList();
+        var stocks = rows.Select(MapToStock).ToList();
+
+        return new ScreenerResult
+        {
+            Stocks = stocks,
+            TotalCount = totalCount,
+            PageNumber = request.PageNumber,
+            PageSize = request.PageSize
+        };
     }
 
     public async Task UpsertAsync(Stock stock)

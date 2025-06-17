@@ -1,0 +1,320 @@
+@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="row">
+    <!-- Market Overview Cards -->
+    <div class="col-12 mb-4">
+        <div class="row g-3" id="marketOverview">
+            <div class="col-6 col-md-3">
+                <div class="card border-0 bg-primary text-white">
+                    <div class="card-body text-center">
+                        <div class="display-6">
+                            <i class="bi bi-graph-up"></i>
+                        </div>
+                        <h6 class="card-title mb-1">SPY</h6>
+                        <h4 class="mb-0" id="spyPrice">--</h4>
+                        <small class="opacity-75" id="spyChange">--</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card border-0 bg-success text-white">
+                    <div class="card-body text-center">
+                        <div class="display-6">
+                            <i class="bi bi-laptop"></i>
+                        </div>
+                        <h6 class="card-title mb-1">QQQ</h6>
+                        <h4 class="mb-0" id="qqqPrice">--</h4>
+                        <small class="opacity-75" id="qqqChange">--</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card border-0 bg-info text-white">
+                    <div class="card-body text-center">
+                        <div class="display-6">
+                            <i class="bi bi-building"></i>
+                        </div>
+                        <h6 class="card-title mb-1">DIA</h6>
+                        <h4 class="mb-0" id="diaPrice">--</h4>
+                        <small class="opacity-75" id="diaChange">--</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card border-0 bg-warning text-dark">
+                    <div class="card-body text-center">
+                        <div class="display-6">
+                            <i class="bi bi-activity"></i>
+                        </div>
+                        <h6 class="card-title mb-1">VIX</h6>
+                        <h4 class="mb-0" id="vixPrice">--</h4>
+                        <small class="opacity-75">Volatility</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Quick Actions -->
+    <div class="col-12 col-lg-4 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bi bi-lightning-charge me-1"></i>
+                    Quick Actions
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <button type="button" class="btn btn-primary" onclick="collectData()">
+                        <i class="bi bi-download me-1"></i>
+                        Refresh Market Data
+                    </button>
+                    <a href="/Screener" class="btn btn-outline-primary">
+                        <i class="bi bi-search me-1"></i>
+                        Stock Screener
+                    </a>
+                    <a href="/Presets" class="btn btn-outline-secondary">
+                        <i class="bi bi-bookmark me-1"></i>
+                        Saved Presets
+                    </a>
+                </div>
+                
+                <hr>
+                
+                <h6 class="mb-2">Popular Strategies</h6>
+                <div class="d-grid gap-1">
+                    <a href="/Screener?preset=value" class="btn btn-outline-success btn-sm">
+                        <i class="bi bi-gem me-1"></i>Value Stocks
+                    </a>
+                    <a href="/Screener?preset=tech" class="btn btn-outline-info btn-sm">
+                        <i class="bi bi-cpu me-1"></i>Large Tech
+                    </a>
+                    <a href="/Screener?preset=volume" class="btn btn-outline-warning btn-sm">
+                        <i class="bi bi-bar-chart me-1"></i>High Volume
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Live Market Data -->
+    <div class="col-12 col-lg-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bi bi-table me-1"></i>
+                    Live Market Data
+                </h5>
+                <button class="btn btn-sm btn-outline-primary" onclick="loadStocks()">
+                    <i class="bi bi-arrow-clockwise"></i>
+                </button>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0" id="stocksTable">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-3">Symbol</th>
+                                <th class="d-none d-sm-table-cell">Company</th>
+                                <th class="text-end">Price</th>
+                                <th class="text-end d-none d-md-table-cell">Change</th>
+                                <th class="text-end d-none d-lg-table-cell">Volume</th>
+                            </tr>
+                        </thead>
+                        <tbody id="stocksBody">
+                            <tr>
+                                <td colspan="5" class="text-center py-4 text-muted">
+                                    <i class="bi bi-hourglass-split me-2"></i>
+                                    Loading market data...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Sector Performance -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-pie-chart me-1"></i>
+                    Sector Performance
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-2" id="sectorPerformance">
+                    <div class="col-12 text-center text-muted py-3">
+                        <i class="bi bi-hourglass-split me-2"></i>
+                        Loading sector data...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    // Load dashboard data
+    async function loadDashboard() {
+        try {
+            showLoading();
+            
+            // Collect fresh data first
+            await collectData();
+            
+            // Then load dashboard
+            const response = await fetch('/api/dashboard');
+            if (response.ok) {
+                const data = await response.json();
+                updateMarketOverview(data);
+            } else {
+                console.log('Dashboard load failed');
+            }
+            
+            // Load stocks data
+            await loadStocks();
+            
+        } catch (error) {
+            console.error('Dashboard load error:', error);
+            showError('Failed to load dashboard data');
+        }
+    }
+
+    // Collect fresh market data
+    async function collectData() {
+        try {
+            showNotification('Collecting fresh market data...', 'info');
+            const response = await fetch('/api/collect-data', { method: 'POST' });
+            const data = await response.json();
+            
+            if (response.ok) {
+                showNotification('Market data updated successfully!', 'success');
+                return data;
+            } else {
+                throw new Error(data.error || 'Data collection failed');
+            }
+        } catch (error) {
+            console.error('Data collection error:', error);
+            showNotification('Failed to collect market data', 'error');
+            throw error;
+        }
+    }
+
+    // Load stocks data
+    async function loadStocks() {
+        try {
+            const response = await fetch('/api/stocks?pageSize=15&sortBy=Volume&sortDescending=true');
+            const data = await response.json();
+            
+            if (response.ok && data.stocks) {
+                updateStocksTable(data.stocks);
+            } else {
+                document.getElementById('stocksBody').innerHTML = 
+                    '<tr><td colspan="5" class="text-center py-3 text-muted">No stock data available</td></tr>';
+            }
+        } catch (error) {
+            console.error('Stocks load error:', error);
+            document.getElementById('stocksBody').innerHTML = 
+                '<tr><td colspan="5" class="text-center py-3 text-danger">Failed to load stocks</td></tr>';
+        }
+    }
+
+    // Update market overview cards
+    function updateMarketOverview(data) {
+        // Update index prices (when data is available)
+        if (data.latestSnapshot) {
+            const snapshot = data.latestSnapshot;
+            document.getElementById('spyPrice').textContent = snapshot.spyPrice ? `$${snapshot.spyPrice.toFixed(2)}` : '--';
+            document.getElementById('qqqPrice').textContent = snapshot.qqqPrice ? `$${snapshot.qqqPrice.toFixed(2)}` : '--';
+            document.getElementById('diaPrice').textContent = snapshot.diaPrice ? `$${snapshot.diaPrice.toFixed(2)}` : '--';
+            document.getElementById('vixPrice').textContent = snapshot.vixLevel ? snapshot.vixLevel.toFixed(2) : '--';
+        }
+    }
+
+    // Update stocks table
+    function updateStocksTable(stocks) {
+        const tbody = document.getElementById('stocksBody');
+        
+        if (!stocks.length) {
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center py-3 text-muted">No stocks cached yet</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = stocks.slice(0, 10).map(stock => `
+            <tr>
+                <td class="ps-3">
+                    <strong>${stock.symbol}</strong>
+                    <div class="d-sm-none small text-muted">${stock.companyName || stock.symbol}</div>
+                </td>
+                <td class="d-none d-sm-table-cell text-muted">${stock.companyName || stock.symbol}</td>
+                <td class="text-end">
+                    <strong>$${stock.price.toFixed(2)}</strong>
+                </td>
+                <td class="text-end d-none d-md-table-cell">
+                    ${stock.dayChangePercent ? 
+                        `<span class="${stock.dayChangePercent >= 0 ? 'text-success' : 'text-danger'}">
+                            ${stock.dayChangePercent.toFixed(2)}%
+                        </span>` : '--'
+                    }
+                </td>
+                <td class="text-end d-none d-lg-table-cell">
+                    ${stock.volume ? stock.volume.toLocaleString() : '--'}
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    // Utility functions
+    function showLoading() {
+        document.getElementById('stocksBody').innerHTML = 
+            '<tr><td colspan="5" class="text-center py-4 text-muted"><i class="bi bi-hourglass-split me-2"></i>Loading...</td></tr>';
+    }
+
+    function showNotification(message, type = 'info') {
+        // Simple toast notification
+        const toastContainer = document.getElementById('toastContainer') || createToastContainer();
+        const toast = document.createElement('div');
+        toast.className = `alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show`;
+        toast.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        toastContainer.appendChild(toast);
+        
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.parentNode.removeChild(toast);
+            }
+        }, 5000);
+    }
+
+    function createToastContainer() {
+        const container = document.createElement('div');
+        container.id = 'toastContainer';
+        container.className = 'position-fixed top-0 end-0 p-3';
+        container.style.zIndex = '1050';
+        document.body.appendChild(container);
+        return container;
+    }
+
+    function showError(message) {
+        showNotification(message, 'error');
+    }
+
+    // Load dashboard on page load
+    document.addEventListener('DOMContentLoaded', loadDashboard);
+</script>
+}

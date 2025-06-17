@@ -18,6 +18,7 @@ builder.Host.UseSerilog();
 
 // Add services to the container.
 builder.Services.AddControllers();
+builder.Services.AddRazorPages();
 
 // Add HTTP clients
 builder.Services.AddHttpClient();
@@ -70,6 +71,7 @@ app.UseRouting();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapRazorPages();
 
 // Add health check endpoint
 app.MapGet("/health", () => new { Status = "Healthy", Timestamp = DateTime.UtcNow });
