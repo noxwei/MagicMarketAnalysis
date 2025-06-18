@@ -225,13 +225,15 @@ public class StockRepository : IStockRepository
         {
             Symbol = row.Symbol,
             CompanyName = row.Name ?? row.Symbol,
-            Price = row.Price ?? 0m,
-            MarketCap = row.MarketCap,
-            Volume = row.Volume ?? 0L,
-            PERatio = row.PERatio,
+            Price = row.Price != null ? Convert.ToDecimal(row.Price) : 0m,
+            MarketCap = row.MarketCap != null ? Convert.ToDecimal(row.MarketCap) : 0m,
+            Volume = row.Volume != null ? Convert.ToInt64(row.Volume) : 0L,
+            PERatio = row.PERatio != null ? Convert.ToDecimal(row.PERatio) : null,
+            DayChange = row.DayChange != null ? Convert.ToDecimal(row.DayChange) : null,
+            DayChangePercent = row.DayChangePercent != null ? Convert.ToDecimal(row.DayChangePercent) : null,
             Sector = row.Sector,
             Industry = row.Industry,
-            LastUpdated = row.LastUpdated ?? DateTime.UtcNow
+            LastUpdated = row.LastUpdated != null ? DateTime.Parse(row.LastUpdated.ToString()) : DateTime.UtcNow
         };
     }
 }
@@ -321,13 +323,13 @@ public class SnapshotRepository : ISnapshotRepository
     {
         return new MarketSnapshot
         {
-            Timestamp = row.Timestamp,
-            SpyPrice = row.Spy,
-            QqqPrice = row.Qqq,
-            DiaPrice = row.Dia,
-            VixLevel = row.VixLevel,
+            Timestamp = DateTime.Parse(row.Timestamp.ToString()),
+            SpyPrice = row.Spy != null ? Convert.ToDecimal(row.Spy) : null,
+            QqqPrice = row.Qqq != null ? Convert.ToDecimal(row.Qqq) : null,
+            DiaPrice = row.Dia != null ? Convert.ToDecimal(row.Dia) : null,
+            VixLevel = row.VixLevel != null ? Convert.ToDecimal(row.VixLevel) : null,
             MarketStatus = row.MarketStatus,
-            TotalStocks = row.TotalStocks,
+            TotalStocks = row.TotalStocks != null ? Convert.ToInt32(row.TotalStocks) : 0,
             SectorPerformance = new List<SectorPerformance>()
         };
     }

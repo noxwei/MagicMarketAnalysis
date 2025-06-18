@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using MagicMarketAnalysis.Data;
 using MagicMarketAnalysis.Services;
+using MagicMarketAnalysis.Models;
 
 namespace MagicMarketAnalysis.Controllers;
 
@@ -145,6 +146,47 @@ public class ApiController : ControllerBase
         }
     }
 
+    [HttpPost("seed-sample-data")]
+    public async Task<IActionResult> SeedSampleData()
+    {
+        try
+        {
+            // Create sample stock data for testing
+            var sampleStocks = new List<Stock>
+            {
+                new() { Symbol = "AAPL", CompanyName = "Apple Inc.", Price = 175.23m, Volume = 45123456, MarketCap = 2800000000000m, PERatio = 28.5m, DayChange = 2.34m, DayChangePercent = 1.35m, Sector = "Technology", Industry = "Consumer Electronics", LastUpdated = DateTime.UtcNow },
+                new() { Symbol = "MSFT", CompanyName = "Microsoft Corporation", Price = 342.67m, Volume = 32456789, MarketCap = 2540000000000m, PERatio = 32.1m, DayChange = -1.23m, DayChangePercent = -0.36m, Sector = "Technology", Industry = "Software", LastUpdated = DateTime.UtcNow },
+                new() { Symbol = "GOOGL", CompanyName = "Alphabet Inc.", Price = 128.45m, Volume = 28934567, MarketCap = 1630000000000m, PERatio = 25.8m, DayChange = 3.21m, DayChangePercent = 2.56m, Sector = "Communication Services", Industry = "Internet Content & Information", LastUpdated = DateTime.UtcNow },
+                new() { Symbol = "AMZN", CompanyName = "Amazon.com Inc.", Price = 142.18m, Volume = 41234567, MarketCap = 1480000000000m, PERatio = 52.3m, DayChange = -2.45m, DayChangePercent = -1.69m, Sector = "Consumer Cyclical", Industry = "Internet Retail", LastUpdated = DateTime.UtcNow },
+                new() { Symbol = "TSLA", CompanyName = "Tesla Inc.", Price = 248.73m, Volume = 67890123, MarketCap = 790000000000m, PERatio = 65.2m, DayChange = 8.34m, DayChangePercent = 3.47m, Sector = "Consumer Cyclical", Industry = "Auto Manufacturers", LastUpdated = DateTime.UtcNow },
+                new() { Symbol = "META", CompanyName = "Meta Platforms Inc.", Price = 315.42m, Volume = 19876543, MarketCap = 820000000000m, PERatio = 23.7m, DayChange = 4.56m, DayChangePercent = 1.47m, Sector = "Communication Services", Industry = "Internet Content & Information", LastUpdated = DateTime.UtcNow },
+                new() { Symbol = "NVDA", CompanyName = "NVIDIA Corporation", Price = 875.34m, Volume = 55432198, MarketCap = 2160000000000m, PERatio = 68.4m, DayChange = 12.45m, DayChangePercent = 1.44m, Sector = "Technology", Industry = "Semiconductors", LastUpdated = DateTime.UtcNow },
+                new() { Symbol = "JPM", CompanyName = "JPMorgan Chase & Co.", Price = 154.67m, Volume = 12345678, MarketCap = 452000000000m, PERatio = 12.3m, DayChange = -0.89m, DayChangePercent = -0.57m, Sector = "Financial Services", Industry = "Banks", LastUpdated = DateTime.UtcNow },
+                new() { Symbol = "JNJ", CompanyName = "Johnson & Johnson", Price = 162.34m, Volume = 8765432, MarketCap = 428000000000m, PERatio = 15.6m, DayChange = 1.12m, DayChangePercent = 0.69m, Sector = "Healthcare", Industry = "Drug Manufacturers", LastUpdated = DateTime.UtcNow },
+                new() { Symbol = "V", CompanyName = "Visa Inc.", Price = 245.89m, Volume = 7654321, MarketCap = 520000000000m, PERatio = 31.2m, DayChange = 2.67m, DayChangePercent = 1.10m, Sector = "Financial Services", Industry = "Credit Services", LastUpdated = DateTime.UtcNow },
+                new() { Symbol = "PG", CompanyName = "Procter & Gamble Co.", Price = 156.78m, Volume = 6543210, MarketCap = 375000000000m, PERatio = 26.1m, DayChange = 0.45m, DayChangePercent = 0.29m, Sector = "Consumer Defensive", Industry = "Household & Personal Products", LastUpdated = DateTime.UtcNow },
+                new() { Symbol = "UNH", CompanyName = "UnitedHealth Group Inc.", Price = 512.45m, Volume = 3456789, MarketCap = 485000000000m, PERatio = 24.8m, DayChange = -3.21m, DayChangePercent = -0.62m, Sector = "Healthcare", Industry = "Healthcare Plans", LastUpdated = DateTime.UtcNow },
+                new() { Symbol = "HD", CompanyName = "Home Depot Inc.", Price = 325.67m, Volume = 4567890, MarketCap = 335000000000m, PERatio = 22.5m, DayChange = 1.89m, DayChangePercent = 0.58m, Sector = "Consumer Cyclical", Industry = "Home Improvement Retail", LastUpdated = DateTime.UtcNow },
+                new() { Symbol = "MA", CompanyName = "Mastercard Inc.", Price = 398.12m, Volume = 2345678, MarketCap = 385000000000m, PERatio = 33.7m, DayChange = 4.23m, DayChangePercent = 1.07m, Sector = "Financial Services", Industry = "Credit Services", LastUpdated = DateTime.UtcNow },
+                new() { Symbol = "BAC", CompanyName = "Bank of America Corp.", Price = 34.56m, Volume = 45678901, MarketCap = 285000000000m, PERatio = 11.2m, DayChange = -0.34m, DayChangePercent = -0.97m, Sector = "Financial Services", Industry = "Banks", LastUpdated = DateTime.UtcNow }
+            };
+
+            await _stockRepository.UpsertBatchAsync(sampleStocks);
+
+            return Ok(new
+            {
+                message = "Sample data seeded successfully",
+                stocksAdded = sampleStocks.Count,
+                timestamp = DateTime.UtcNow
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to seed sample data");
+            return StatusCode(500, new { error = "Failed to seed sample data", details = ex.Message });
+        }
+    }
+
     [HttpGet("")]
     public IActionResult Index()
     {
@@ -157,6 +199,7 @@ public class ApiController : ControllerBase
                 "GET /api/dashboard - Market overview with latest data",
                 "GET /api/stocks - Stock screener with filters",
                 "POST /api/collect-data - Trigger data collection manually",
+                "POST /api/seed-sample-data - Add sample stock data for testing",
                 "GET /api/snapshots - Recent market snapshots",
                 "GET /health - Health check"
             },
