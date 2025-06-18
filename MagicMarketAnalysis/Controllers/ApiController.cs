@@ -82,17 +82,15 @@ public class ApiController : ControllerBase
                 PageSize = pageSize
             };
 
-            var stocks = await _stockRepository.SearchAsync(request);
-            var totalCount = await _stockRepository.GetAllAsync();
+            var result = await _stockRepository.SearchAsync(request);
 
             return Ok(new
             {
-                Stocks = stocks,
-                TotalCount = totalCount.Count,
-                Page = page,
-                PageSize = pageSize,
-                TotalPages = (int)Math.Ceiling((double)totalCount.Count / pageSize),
-                Request = request
+                stocks = result.Stocks,
+                totalCount = result.TotalCount,
+                page = result.PageNumber,
+                pageSize = result.PageSize,
+                totalPages = result.TotalPages
             });
         }
         catch (Exception ex)
