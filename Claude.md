@@ -33,6 +33,23 @@ dotnet ef database update
 dotnet test
 ```
 
+### User Secrets (Development)
+```bash
+# Initialize user secrets (already configured)
+dotnet user-secrets init --project MagicMarketAnalysis/MagicMarketAnalysis.csproj
+
+# Required for production
+dotnet user-secrets set "FMP_API_KEY" "your_fmp_api_key" --project MagicMarketAnalysis/MagicMarketAnalysis.csproj
+dotnet user-secrets set "TRADIER_API_KEY" "your_tradier_key" --project MagicMarketAnalysis/MagicMarketAnalysis.csproj
+dotnet user-secrets set "NEWSDATA_API_KEY" "your_newsdata_key" --project MagicMarketAnalysis/MagicMarketAnalysis.csproj
+
+# Optional for historical backfill
+dotnet user-secrets set "ALPHAVANTAGE_API_KEY" "your_av_key" --project MagicMarketAnalysis/MagicMarketAnalysis.csproj
+
+# List current secrets
+dotnet user-secrets list --project MagicMarketAnalysis/MagicMarketAnalysis.csproj
+```
+
 ## Project Architecture
 
 ### Core Data Flow
@@ -84,7 +101,8 @@ ALPHAVANTAGE_API_KEY=your_av_key
 
 ### Security Guardrails
 - **Server-side only**: No client-side API key exposure
-- **Environment variables**: All sensitive config externalized
+- **User Secrets**: Local development uses dotnet user-secrets for API keys
+- **Environment variables**: Production uses environment variables
 - **Rate limiting**: Respect API provider limits
 - **Input validation**: All user inputs sanitized
 
