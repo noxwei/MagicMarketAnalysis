@@ -21,7 +21,9 @@
       "Bash(lsof:*)",
       "Bash(git push:*)",
       "Bash(ls:*)",
-      "Bash(dotnet:*)"
+      "Bash(dotnet:*)",
+      "Bash(git fetch:*)",
+      "Bash(sqlite3:*)"
     ],
     "deny": []
   }
