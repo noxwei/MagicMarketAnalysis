@@ -8,7 +8,7 @@
       "Bash(dotnet build)",
       "Bash(dotnet restore:*)",
       "Bash(rm:*)",
-      "Bash(export FMP_API_KEY=\"93U7Eh8SUepUJN5UZtdmE3wgUkDC4gQF\")",
+      "Bash(export FMP_API_KEY=\"\")",
       "Bash(dotnet run:*)",
       "Bash(dotnet clean:*)",
       "Bash(dotnet build:*)",
