@@ -62,6 +62,27 @@ export NEWSDATA_API_KEY="your_newsdata_key_here"
 export ALPHAVANTAGE_API_KEY="your_av_key_here"
 ```
 
+### Development Setup (User Secrets)
+For local development, use .NET User Secrets to keep API keys secure:
+
+```bash
+# Initialize user secrets (already configured in project)
+dotnet user-secrets init --project MagicMarketAnalysis/MagicMarketAnalysis.csproj
+
+# Required API Keys
+dotnet user-secrets set "FMP_API_KEY" "your_fmp_key_here" --project MagicMarketAnalysis/MagicMarketAnalysis.csproj
+dotnet user-secrets set "TRADIER_API_KEY" "your_tradier_key_here" --project MagicMarketAnalysis/MagicMarketAnalysis.csproj
+dotnet user-secrets set "NEWSDATA_API_KEY" "your_newsdata_key_here" --project MagicMarketAnalysis/MagicMarketAnalysis.csproj
+
+# Optional (for historical backfill)
+dotnet user-secrets set "ALPHAVANTAGE_API_KEY" "your_av_key_here" --project MagicMarketAnalysis/MagicMarketAnalysis.csproj
+
+# List all configured secrets
+dotnet user-secrets list --project MagicMarketAnalysis/MagicMarketAnalysis.csproj
+```
+
+
+
 ### API Costs
 - **FMP Starter**: $22/month (5 years historical data)
 - **Tradier Dev**: $10/month (options flow access)
@@ -83,7 +104,7 @@ export ALPHAVANTAGE_API_KEY="your_av_key_here"
 - **Server-side API calls only** - No client-side key exposure
 - **Rate limiting** - Respect API limits with intelligent caching
 - **Lightweight** - SQLite for local cache, minimal dependencies
-- **Security-first** - Environment variables, no keys in code
+- **Security-first** - User Secrets for development, environment variables for production
 
 ### Project Structure
 ```

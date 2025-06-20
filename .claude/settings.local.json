@@ -19,7 +19,11 @@
       "Bash(pkill:*)",
       "Bash(true)",
       "Bash(lsof:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(ls:*)",
+      "Bash(dotnet:*)",
+      "Bash(git fetch:*)",
+      "Bash(sqlite3:*)"
     ],
     "deny": []
   }
